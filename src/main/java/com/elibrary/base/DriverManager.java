@@ -1,4 +1,4 @@
-package com.elibrary.base;
+﻿package com.elibrary.base;
 
 import com.elibrary.config.ConfigReader;
 import org.openqa.selenium.WebDriver;
@@ -15,10 +15,12 @@ public class DriverManager {
         if (driverThreadLocal.get() == null) {
             ChromeOptions options = new ChromeOptions();
 
+            // Auto-detect Linux (GitHub Actions runner) or CLI flag
+            boolean isLinux = System.getProperty("os.name", "").toLowerCase().contains("linux");
             String cliHeadless = System.getProperty("headless");
-            boolean isHeadless = (cliHeadless != null)
+            boolean isHeadless = isLinux || (cliHeadless != null
                 ? Boolean.parseBoolean(cliHeadless)
-                : Boolean.parseBoolean(ConfigReader.getProperty("headless"));
+                : Boolean.parseBoolean(ConfigReader.getProperty("headless")));
 
             if (isHeadless) {
                 options.addArguments("--headless=new");
@@ -47,7 +49,6 @@ public class DriverManager {
         driverThreadLocal.set(driver);
     }
 
-    // Cleans up the ThreadLocal storage for the current thread
     public static void unload() {
         driverThreadLocal.remove();
     }
