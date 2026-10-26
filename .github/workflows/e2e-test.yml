@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Checkout Test Automation Repo
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Setup Java 17
@@ -28,10 +28,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Clone and Start eLibrary Web App
+      # Builds and starts the frontend directly from the repository
+      - name: Start eLibrary Web App
         run: |
-          git clone https://github.com/DarshanVishu/eLibrary-Web.git app
-          cd app
+          cd frontend
           npm install
           npm run build
           npm run start &
