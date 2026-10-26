@@ -1,18 +1,21 @@
 package com.elibrary.tests.admin;
 
-import com.elibrary.base.DriverManager;
+import com.elibrary.base.BaseTest;
 import com.elibrary.config.ConfigReader;
-import com.elibrary.pages.common.LoginPage;
-import com.elibrary.tests.base.BaseTest;
+import com.elibrary.driver.DriverManager;
+import com.elibrary.pages.auth.LoginPage;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.List;
 
 public class AdminManagementTests extends BaseTest {
 
-    @Test(description = "Inspect buttons and layout of the Approvals view")
+    @Test(priority = 1, description = "Admin inspects pending resource approvals queue")
     public void inspectApprovalsView() throws InterruptedException {
         LoginPage loginPage = new LoginPage();
         loginPage.loginAndWaitForRoute(
@@ -23,11 +26,15 @@ public class AdminManagementTests extends BaseTest {
 
         Thread.sleep(2000);
 
-        // Click Approvals in sidebar
-        WebElement approvalsTab = DriverManager.getDriver().findElement(
-            By.xpath("//button[contains(., 'Approvals')] | //a[contains(., 'Approvals')]")
-        );
-        approvalsTab.click();
+        // Click Approvals in sidebar via JavaScript fallback or navigate directly
+        By approvalsLocator = By.xpath("//button[contains(., 'Approvals')] | //a[contains(., 'Approvals')]");
+        try {
+            WebElement approvalsTab = DriverManager.getDriver().findElement(approvalsLocator);
+            ((JavascriptExecutor) DriverManager.getDriver()).executeScript("arguments[0].scrollIntoView({block: 'center'});", approvalsTab);
+            ((JavascriptExecutor) DriverManager.getDriver()).executeScript("arguments[0].click();", approvalsTab);
+        } catch (Exception e) {
+            DriverManager.getDriver().get(ConfigReader.getBaseUrl() + "/admin/approvals");
+        }
         Thread.sleep(2500);
 
         System.out.println(">>> Landed on URL: " + DriverManager.getDriver().getCurrentUrl());
@@ -38,17 +45,5 @@ public class AdminManagementTests extends BaseTest {
         );
 
         System.out.println("--- Matching Cards Found: " + matchingCards.size() + " ---");
-
-        // Inspect all buttons present on the Approvals screen
-        List<WebElement> allButtons = DriverManager.getDriver().findElements(By.tagName("button"));
-        System.out.println("--- All Buttons on Approvals View ---");
-        for (WebElement btn : allButtons) {
-            String text = btn.getText().trim().replace("\n", " ");
-            String ariaLabel = btn.getDomAttribute("aria-label");
-            String titleAttr = btn.getDomAttribute("title");
-            String dataTestId = btn.getDomAttribute("data-testid");
-            System.out.println(String.format("Button text='%s' | aria-label='%s' | title='%s' | testid='%s'",
-                    text, ariaLabel, titleAttr, dataTestId));
-        }
     }
 }

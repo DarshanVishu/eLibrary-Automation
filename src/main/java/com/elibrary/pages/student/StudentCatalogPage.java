@@ -45,22 +45,31 @@ public class StudentCatalogPage extends BasePage {
         String libraryUrl = ConfigReader.getBaseUrl() + "/student/library";
 
         if (driver.findElements(searchInput).isEmpty()) {
-            if (!driver.findElements(libraryNavBtn).isEmpty()) {
-                WebElement nav = wait.until(ExpectedConditions.elementToBeClickable(libraryNavBtn));
-                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", nav);
-            } else {
+            try {
+                if (!driver.findElements(libraryNavBtn).isEmpty()) {
+                    WebElement nav = driver.findElement(libraryNavBtn);
+                    ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", nav);
+                    ((JavascriptExecutor) driver).executeScript("arguments[0].click();", nav);
+                } else {
+                    driver.get(libraryUrl);
+                }
+            } catch (Exception e) {
                 driver.get(libraryUrl);
             }
         }
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
+        } catch (Exception e) {
+            driver.get(libraryUrl);
+            wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
+        }
         return this;
     }
 
     public StudentCatalogPage searchBook(String query) {
         WebElement input = wait.until(ExpectedConditions.elementToBeClickable(searchInput));
 
-        // Use React 16/18 Prototype value setter so React registers the internal state change
         String reactInputScript =
             "var input = arguments[0];" +
             "var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;" +
@@ -72,60 +81,31 @@ public class StudentCatalogPage extends BasePage {
 
         ((JavascriptExecutor) driver).executeScript(reactInputScript, input, query);
 
-        // Also trigger native Enter key
-        input.sendKeys(Keys.ENTER);
-
         try {
-            Thread.sleep(1200); // Allow debounced state filter to commit
+            Thread.sleep(800);
         } catch (InterruptedException ignored) {}
 
+        input.sendKeys(Keys.ENTER);
         return this;
     }
 
-    public List<WebElement> getBookCards() {
-        return driver.findElements(bookCards);
-    }
-
-    public int getBookCount() {
-        return getBookCards().size();
-    }
-
-    public List<String> getAllBookTitles() {
-        List<WebElement> titleElements = driver.findElements(bookCardTitles);
+    public List<String> getCatalogBookTitles() {
+        List<WebElement> elements = driver.findElements(bookCardTitles);
         List<String> titles = new ArrayList<>();
-        for (WebElement el : titleElements) {
-            String text = el.getText().trim();
-            if (!text.isEmpty()) {
-                titles.add(text);
+        for (WebElement el : elements) {
+            if (el.isDisplayed() && !el.getText().trim().isEmpty()) {
+                titles.add(el.getText().trim());
             }
         }
         return titles;
     }
 
-    public StudentCatalogPage openFirstBook() {
-        List<WebElement> cards = getBookCards();
-        if (cards.isEmpty()) {
-            throw new RuntimeException("No book cards available to open in catalog.");
-        }
-
-        WebElement firstCard = cards.get(0);
-        List<WebElement> actionButtons = firstCard.findElements(openBookActionBtn);
-
-        if (!actionButtons.isEmpty()) {
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", actionButtons.get(0));
-        } else {
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", firstCard);
-        }
-
-        return this;
+    public boolean isNoResultsMessageDisplayed() {
+        return !driver.findElements(emptyStateIndicator).isEmpty() &&
+               driver.findElement(emptyStateIndicator).isDisplayed();
     }
 
-    public boolean isEmptyStateDisplayed() {
-        try {
-            wait.until(d -> !d.findElements(emptyStateIndicator).isEmpty() || d.findElements(bookCards).isEmpty());
-            return !driver.findElements(emptyStateIndicator).isEmpty() || driver.findElements(bookCards).isEmpty();
-        } catch (Exception e) {
-            return driver.findElements(bookCards).isEmpty();
-        }
+    public int getBookCardCount() {
+        return driver.findElements(bookCards).size();
     }
 }
