@@ -1,4 +1,4 @@
-﻿# Compiled Maven target folder
+# Compiled Maven target folder
 target/
 
 # Local test reports and logs
@@ -14,6 +14,31 @@ test-output/
 .idea/
 *.iml
 
+# VS Code
+.vscode/
+*.code-workspace
+
 # OS files
 .DS_Store
 Thumbs.db
+
+# Environment & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# WebDriver & Headless Browser Crash Artifacts
+*.dump
+*.dumpstream
+crashpad/
+scoped_dir*
+
+# Node / Frontend Build & Cache
+node_modules/
+.next/
+out/
+.npm/
