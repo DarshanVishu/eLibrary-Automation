@@ -89,7 +89,19 @@ public class StudentCatalogPage extends BasePage {
         return this;
     }
 
-    public List<String> getCatalogBookTitles() {
+    public List<WebElement> getBookCards() {
+        return driver.findElements(bookCards);
+    }
+
+    public int getBookCount() {
+        return driver.findElements(bookCards).size();
+    }
+
+    public int getBookCardCount() {
+        return getBookCount();
+    }
+
+    public List<String> getAllBookTitles() {
         List<WebElement> elements = driver.findElements(bookCardTitles);
         List<String> titles = new ArrayList<>();
         for (WebElement el : elements) {
@@ -100,12 +112,29 @@ public class StudentCatalogPage extends BasePage {
         return titles;
     }
 
-    public boolean isNoResultsMessageDisplayed() {
+    public List<String> getCatalogBookTitles() {
+        return getAllBookTitles();
+    }
+
+    public boolean isEmptyStateDisplayed() {
         return !driver.findElements(emptyStateIndicator).isEmpty() &&
                driver.findElement(emptyStateIndicator).isDisplayed();
     }
 
-    public int getBookCardCount() {
-        return driver.findElements(bookCards).size();
+    public boolean isNoResultsMessageDisplayed() {
+        return isEmptyStateDisplayed();
+    }
+
+    public void openFirstBook() {
+        List<WebElement> cards = driver.findElements(bookCards);
+        if (!cards.isEmpty()) {
+            WebElement target = cards.get(0);
+            List<WebElement> actionBtns = target.findElements(openBookActionBtn);
+            if (!actionBtns.isEmpty()) {
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", actionBtns.get(0));
+            } else {
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", target);
+            }
+        }
     }
 }
