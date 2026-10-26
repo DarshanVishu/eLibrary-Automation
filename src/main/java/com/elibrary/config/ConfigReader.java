@@ -17,16 +17,35 @@ public class ConfigReader {
     }
 
     public static String getProperty(String key) {
-        // 1. Check command-line system property first (-Dkey=value)
         String systemProp = System.getProperty(key);
         if (systemProp != null && !systemProp.trim().isEmpty()) {
             return systemProp.trim();
         }
-        // 2. Fall back to config.properties
         return properties.getProperty(key);
+    }
+
+    public static String getBrowser() {
+        String browser = getProperty("browser");
+        return (browser != null && !browser.trim().isEmpty()) ? browser.trim() : "chrome";
     }
 
     public static String getBaseUrl() {
         return getProperty("baseUrl");
+    }
+
+    public static String getApiUrl() {
+        String url = getProperty("apiUrl");
+        return (url != null) ? url : getBaseUrl();
+    }
+
+    public static boolean isHeadless() {
+        boolean isLinux = System.getProperty("os.name", "").toLowerCase().contains("linux");
+        String headless = getProperty("headless");
+        return isLinux || (headless != null && Boolean.parseBoolean(headless));
+    }
+
+    public static int getExplicitWait() {
+        String wait = getProperty("explicitWait");
+        return (wait != null) ? Integer.parseInt(wait) : 10;
     }
 }
