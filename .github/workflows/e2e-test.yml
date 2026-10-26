@@ -10,7 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout Code
@@ -28,16 +28,25 @@ jobs:
         with:
           node-version: 20
 
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Local Supabase
+        run: |
+          cd frontend
+          supabase start
+
       - name: Start eLibrary Web App
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: "https://mock-project-id.supabase.co"
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_publishable_anon_token_for_ci_build"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_publishable_anon_token_for_ci_build"
-          SUPABASE_SERVICE_ROLE_KEY: "dummy-service-role-key"
         run: |
           cd frontend
           npm install --legacy-peer-deps
+          NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 \
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=$(cd .. && cd frontend && supabase status -o json | jq -r .ANON_KEY) \
           npm run build
+          NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 \
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=$(cd .. && cd frontend && supabase status -o json | jq -r .ANON_KEY) \
           npm run start &
           npx wait-on -t 120000 http://localhost:3000
 
@@ -47,7 +56,7 @@ jobs:
           chrome-version: stable
 
       - name: Run TestNG Suite via Maven
-        run: mvn clean test -Dheadless=true
+        run: mvn clean test -Dheadless=true -DapiUrl="http://127.0.0.1:54321"
 
       - name: Upload Test Reports & Artifacts
         if: always()
