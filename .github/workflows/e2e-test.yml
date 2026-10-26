@@ -2,9 +2,9 @@ name: eLibrary Automated Regression & E2E Suite
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Test Automation Repository
         uses: actions/checkout@v4
 
       - name: Setup Java 17
@@ -29,7 +29,7 @@ jobs:
           chrome-version: stable
 
       - name: Run TestNG Suite via Maven
-        run: mvn clean test -Dheadless=true
+        run: mvn clean test -Dheadless=true -DbaseUrl="https://your-live-deployment-url.vercel.app"
 
       - name: Upload Test Reports & Artifacts
         if: always()
