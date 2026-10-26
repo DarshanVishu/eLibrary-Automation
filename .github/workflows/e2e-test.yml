@@ -10,7 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Code
@@ -33,12 +33,25 @@ jobs:
         with:
           chrome-version: stable
 
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase Local Containers & Seed DB
+        working-directory: frontend
+        run: |
+          supabase start
+          # Export local API URL and Keys to GitHub Environment
+          echo "NEXT_PUBLIC_SUPABASE_URL=$(supabase status -o json | jq -r '.API_URL')" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(supabase status -o json | jq -r '.ANON_KEY')" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(supabase status -o json | jq -r '.SERVICE_ROLE_KEY')" >> $GITHUB_ENV
+
       - name: Start eLibrary Web App
         working-directory: frontend
         env:
-          NEXT_PUBLIC_SUPABASE_URL: "https://mock-project-id.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_token_for_ci_build"
-          SUPABASE_SERVICE_ROLE_KEY: "dummy-service-role-key"
+          NEXT_PUBLIC_APP_NAME: "e-library"
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
         run: |
           npm install --legacy-peer-deps
           npm run build
