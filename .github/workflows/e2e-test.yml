@@ -6,11 +6,16 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Target Base URL (e.g., https://staging.elibrary.com)'
+        required: false
+        default: ''
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout Code
@@ -28,13 +33,13 @@ jobs:
         with:
           chrome-version: stable
 
-      - name: Validate Automation Framework
-        run: mvn clean test-compile
-
       - name: Run TestNG Suite via Maven
-        continue-on-error: true
         run: |
-          mvn test -Dheadless=true -DtestFailureIgnore=true || true
+          if [ -n "${{ github.event.inputs.target_env }}" ]; then
+            mvn clean test -Dheadless=true -DbaseUrl="${{ github.event.inputs.target_env }}"
+          else
+            mvn clean test -Dheadless=true
+          fi
 
       - name: Upload Test Reports & Artifacts
         if: always()
