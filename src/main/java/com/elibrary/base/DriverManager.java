@@ -14,8 +14,7 @@ public class DriverManager {
     public static void initDriver() {
         if (driverThreadLocal.get() == null) {
             ChromeOptions options = new ChromeOptions();
-            
-            // CLI property (-Dheadless=true) takes precedence over config.properties
+
             String cliHeadless = System.getProperty("headless");
             boolean isHeadless = (cliHeadless != null)
                 ? Boolean.parseBoolean(cliHeadless)
@@ -32,11 +31,11 @@ public class DriverManager {
             options.addArguments("--remote-allow-origins=*");
 
             WebDriver driver = new ChromeDriver(options);
-            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0)); // Explicit waits only
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
             driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
             driver.manage().window().maximize();
 
-            driverThreadLocal.set(driver);
+            setDriver(driver);
         }
     }
 
@@ -44,11 +43,20 @@ public class DriverManager {
         return driverThreadLocal.get();
     }
 
+    public static void setDriver(WebDriver driver) {
+        driverThreadLocal.set(driver);
+    }
+
+    // Cleans up the ThreadLocal storage for the current thread
+    public static void unload() {
+        driverThreadLocal.remove();
+    }
+
     public static void quitDriver() {
         WebDriver driver = driverThreadLocal.get();
         if (driver != null) {
             driver.quit();
-            driverThreadLocal.remove();
+            unload();
         }
     }
 }
