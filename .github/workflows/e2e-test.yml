@@ -28,11 +28,10 @@ jobs:
         with:
           node-version: 20
 
-      # Builds and starts the frontend directly from the repository
       - name: Start eLibrary Web App
         run: |
           cd frontend
-          npm install
+          npm install --legacy-peer-deps
           npm run build
           npm run start &
           npx wait-on -t 120000 http://localhost:3000
