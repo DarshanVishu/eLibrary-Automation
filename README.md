@@ -12,3 +12,12 @@ if (Test-Path $readmePath) {
 git add README.md
 git commit -m "docs: add GitHub Actions CI build status badge"
 git push origin main
+
+
+---
+
+## 📖 In-Depth Framework Documentation
+
+For complete technical specifications, architectural patterns, React synthetic event handling details, and the test coverage matrix:
+
+👉 **[Read the Full Automation & QA Engineering Guide (docs/AUTOMATION_DOCS.md)](docs/AUTOMATION_DOCS.md)**
