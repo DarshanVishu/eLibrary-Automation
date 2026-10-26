@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Checkout Test Automation Repository
+      - name: Checkout Test Automation Repo
         uses: actions/checkout@v4
 
       - name: Setup Java 17
@@ -23,13 +23,27 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Clone and Start eLibrary Web App
+        run: |
+          git clone https://github.com/DarshanVishu/eLibrary-Web.git app
+          cd app
+          npm install
+          npm run build
+          npm run start &
+          npx wait-on -t 120000 http://localhost:3000
+
       - name: Setup Google Chrome
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
 
       - name: Run TestNG Suite via Maven
-        run: mvn clean test -Dheadless=true -DbaseUrl="https://your-live-deployment-url.vercel.app"
+        run: mvn clean test -Dheadless=true
 
       - name: Upload Test Reports & Artifacts
         if: always()
