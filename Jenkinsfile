@@ -2,14 +2,13 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.x'
-        jdk 'JDK 21'
+        maven 'Maven-3'
+        jdk 'JDK-17' // or whatever exact JDK name is set up in your Global Tool Configuration
     }
 
     stages {
         stage('Checkout eLibrary Code') {
             steps {
-                // Pulls code from your elibrary-automation repository
                 checkout scm
             }
         }
@@ -22,7 +21,6 @@ pipeline {
 
         stage('Execute eLibrary Tests') {
             steps {
-                // Run your specific test suite (e.g., TestNG suite xml or maven profile)
                 sh 'mvn test -Dsurefire.useFile=false'
             }
         }
@@ -30,14 +28,13 @@ pipeline {
 
     post {
         always {
-            // Archive TestNG/Surefire XML reports
             junit 'target/surefire-reports/*.xml'
         }
         success {
             echo 'eLibrary automation test suite executed successfully!'
         }
         failure {
-            echo 'eLibrary pipeline failed. Review the console logs for failures.'
+            echo 'eLibrary pipeline failed. Review console logs.'
         }
     }
 }
