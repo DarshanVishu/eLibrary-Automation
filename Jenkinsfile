@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         maven 'Maven-3'
-        jdk 'JDK-17' // or whatever exact JDK name is set up in your Global Tool Configuration
+        jdk 'JDK-17'
     }
 
     stages {
@@ -15,13 +15,13 @@ pipeline {
 
         stage('Compile Test Suite') {
             steps {
-                sh 'mvn clean compile test-compile'
+                bat 'mvn clean compile test-compile'
             }
         }
 
         stage('Execute eLibrary Tests') {
             steps {
-                sh 'mvn test -Dsurefire.useFile=false'
+                bat 'mvn test -Dsurefire.useFile=false'
             }
         }
     }
